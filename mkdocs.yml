@@ -1,0 +1,77 @@
+site_name: Java 转 AI 的 90 天
+site_description: 写给 Java 后端工程师的 AI 转型路线：你不是从零开始，你只是换了一把剑。25 篇正文，全部实验实测跑通。
+site_author: cookiespiggy
+repo_url: https://github.com/cookiespiggy/java-to-ai-in-90-days
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  language: zh
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: 切换到暗色
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: 切换到亮色
+  features:
+    - navigation.top
+    - navigation.footer
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.action.edit
+
+nav:
+  - 首页: index.md
+  - 完整目录: toc.md
+  - 序章: 00-序章.md
+  - 01 · 换语言:
+    - 01 第一次亲密接触: 01-python-first-touch.md
+    - 02 类型这回事: 02-types-and-typing.md
+    - 03 容器思维: 03-containers.md
+    - 04 函数一等公民: 04-functions.md
+    - 05 生成器: 05-generators.md
+    - 06 对象模型: 06-object-model.md
+    - 07 并发真相: 07-concurrency.md
+  - 02 · 懂原理:
+    - 08 大模型是自动补全: 08-llm-basics.md
+    - 09 Token 与 Embedding: 09-token-embedding.md
+    - 10 Transformer: 10-transformer.md
+  - 03 · 上手:
+    - 11 第一次调用: 11-first-call.md
+    - 12 RAG 原理: 12-rag.md
+    - 13 RAG 实战: 13-rag-project.md
+    - 14 Agent: 14-agent.md
+    - 15 LangGraph: 15-langgraph.md
+  - 04 · 精通检索与后训练:
+    - 16 生产级检索: 16-advanced-retrieval.md
+    - 17 后训练地图: 17-posttraining-map.md
+    - 18 SFT 深水区: 18-sft-deep.md
+    - 19 偏好对齐与 RLVR: 19-alignment-rl.md
+    - 20 生产级 Agent 架构: 20-agent-architecture.md
+  - 05 · 成专家:
+    - 21 评测: 21-evaluation.md
+    - 22 工程化与安全: 22-engineering.md
+    - 23 本地推理闭环: 23-local-inference.md
+    - 24 部署与推理优化: 24-serving.md
+  - 尾声:
+    - 25 简历与面试: 25-career.md
+    - 附录 A 对照速查表: appendix-cheatsheet.md
+    - 附录 B 可信度分级手册: appendix-evidence-grading.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - tables
+  - toc:
+      permalink: true
