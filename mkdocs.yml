@@ -28,6 +28,9 @@ theme:
     - content.code.copy
     - content.action.edit
 
+extra_css:
+  - stylesheets/extra.css
+
 nav:
   - 首页: index.md
   - 完整目录: toc.md
