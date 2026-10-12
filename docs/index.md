@@ -4,9 +4,9 @@ hide:
   - toc
 ---
 
-# Java 转 AI 的 90 天
-
 <div class="hero" markdown>
+
+# Java 转 AI 的 90 天
 
 **你不是从零开始，你只是换了一把剑。**
 
