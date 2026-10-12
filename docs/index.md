@@ -104,6 +104,18 @@ AI 应用开发的竞争壁垒，早就不是"会不会微调模型"，而是
 
 </div>
 
+## 可直接跑的实战项目
+
+全部在作者本机实测通过，不依赖本书正文也能独立使用。
+
+| 项目 | 对应篇目 | 实测结果 |
+|---|---|---|
+| [`rag-project`](https://github.com/cookiespiggy/java-to-ai-in-90-days/tree/main/projects/rag-project) | 13 篇 · 企业知识库 RAG | 检索 top1 **7/7**，平均 158ms；生成层默认**本地模型**，零 API 费用 |
+| [`sft-project`](https://github.com/cookiespiggy/java-to-ai-in-90-days/tree/main/projects/sft-project) | 18 篇 · SFT 微调 0.5B | loss **6.443 → 0.777**，9 条数据让 0.5B 学会客服语气 |
+| [`agent-project`](https://github.com/cookiespiggy/java-to-ai-in-90-days/tree/main/projects/agent-project) | 14 篇 · 真实 ReAct Agent | 本地 4B 真调工具，护栏实测触发；含 4B 参数翻车实录 |
+
+---
+
 ## 全部章节
 
 完整目录见 [完整目录页](toc.md)。共 25 篇正文 + 2 个附录，约 6800 行，全部实验在作者机器实测通过。
