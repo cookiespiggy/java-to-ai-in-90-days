@@ -169,6 +169,7 @@
 |---|---|---|
 | [`projects/rag-project/`](projects/rag-project/) | 13 篇 · 企业知识库 RAG | ✅ **实测跑通**：检索 top1 **7/7**、平均 136ms；生成层**默认本地模型**（Unsloth 4B-GGUF，零 API 费用），云端/本地一行环境变量切换 |
 | [`projects/sft-project/`](projects/sft-project/) | 18 篇 · SFT 微调 0.5B | ✅ **实测跑通**：loss 6.443→0.777、9 条数据让 0.5B 学会客服语气，含训练/诊断/对比全套脚本 |
+| [`projects/agent-project/`](projects/agent-project/) | 14 篇 · 真实 ReAct Agent | ✅ **实测跑通**：本地 4B 模型真调工具、护栏实测触发、附 4B 参数类型翻车实录与三层修法 |
 
 每个项目自带 README（含运行手册、实测输出、踩坑表），不依赖本书正文也能独立使用。
 
