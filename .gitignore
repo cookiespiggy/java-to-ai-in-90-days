@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# 环境变量与密钥（绝对不要提交）
+.env
+.env.*
+!.env.example
+
+# 本地产物
+adapters/
+models/
+data/*.jsonl
+*.log
+
+# 系统
+.DS_Store
+
+# 生成器实验产物（05 篇）
+huge.log
