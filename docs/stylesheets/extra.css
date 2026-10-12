@@ -6,9 +6,22 @@
   background:
     radial-gradient(ellipse at top left, rgba(101, 123, 255, .16), transparent 55%),
     radial-gradient(ellipse at bottom right, rgba(239, 71, 111, .14), transparent 55%),
-    var(--md-code-bg-color, #f7f7f8);
+    linear-gradient(180deg, rgba(255,255,255,.28), rgba(246,247,251,.96));
   border: 1px solid var(--md-default-fg-color--lightest, #e5e5e5);
-  border-radius: 14px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(76, 84, 135, .08);
+}
+
+.md-typeset .hero h1 {
+  margin: 0 0 .75rem;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.1;
+  letter-spacing: -.04em;
+  font-weight: 900;
+  background: linear-gradient(90deg, #1f2a44 0%, #4957d5 35%, #7c4dff 70%, #ea4c89 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .md-typeset .hero > p:first-of-type {
