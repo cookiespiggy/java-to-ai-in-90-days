@@ -102,7 +102,7 @@ KV Cache 字节数 = 层数 × KV头数 × head_dim × 2(K和V) × 2(fp16每参�
 
 ```python
 def kv_cache_gb(layers, kv_heads, head_dim, ctx, dtype_bytes=2):
-    \"\"\"算一个模型在给定上下文下的 KV Cache 显存占用\"\"\"
+    """算一个模型在给定上下文下的 KV Cache 显存占用（返回 GB）"""
     return layers * kv_heads * head_dim * 2 * dtype_bytes * ctx / 2**30
 
 # 作者机器 oMLX 日志的真实参数（Qwen2.5-0.5B）
