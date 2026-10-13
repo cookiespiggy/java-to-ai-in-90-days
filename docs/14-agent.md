@@ -286,7 +286,7 @@ projects/agent-project/
 
 **作者的修法（两个都要做，缺一不可）：**
 
-```python
+```text
 # 修法①：工具描述消除歧义——参数名直接说清单位
 def calc_salary(days: int, daily_wage: int) -> int:
     """按请假天数和【每天】工资估算损失金额。参数 daily_wage 是「日薪」，不是时薪。"""
