@@ -158,6 +158,89 @@ next(g)   # 就是要让它炸：StopIteration
 
 看到的报错文本记下来。下一阶段调 LLM API，流式响应用完后再去 `next()`，就是这个错——到那天你会感谢今天故意犯错的自己。
 
+### 实验 6：迭代器协议——generator 只是速成班
+
+前五个实验你一直在用 `for`，但 `for` 到底凭什么能遍历一个对象？答案只有两个方法，这就是 **迭代器协议**：
+
+```python
+class Countdown:
+    """手写迭代器：协议只有两个方法，dataset 的牙齿"""
+
+    def __init__(self, n):
+        self.n = n
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.n <= 0:
+            raise StopIteration
+        self.n -= 1
+        return self.n + 1
+
+
+for x in Countdown(3):
+    print(x, end=" ")          # 3 2 1
+print()
+
+it = iter(Countdown(2))
+print(next(it), next(it))      # 2 1
+
+# generator 是迭代器的语法糖：for 只认协议，不关心你是谁
+g = (x * x for x in range(4))
+print("是迭代器吗:", iter(g) is g, "| list(g) =", list(g))
+
+def ticker(n):
+    for i in range(n):
+        yield i
+
+print("generator 类型:", type(ticker(2)), "| 有 __iter__:", hasattr(ticker(2), "__iter__"))
+```
+
+作者机器实测输出：
+
+```text
+3 2 1
+2 1
+是迭代器吗: True | list(g) = [0, 1, 4, 9]
+generator 类型: <class 'generator'> | 有 __iter__: True
+```
+
+`for x in obj` 干的事，翻译成 Java 老司机的语言：**先问一遍 `obj.__iter__()` 拿一个迭代器，然后反复 `next()`，直到 `StopIteration` 举手投降**。Java 的 `Iterable`/`Iterator` 是同一条协议，区别是 Python 把它做成了语法糖：`yield` 函数自动帮你实现这两个方法。
+
+所以实验 5 那个 `StopIteration`，不是报错，是**协议在按流程谢幕**。
+
+### 实验 7：预习第 11 篇——async generator，流式输出的完全体
+
+第 11 篇的 `chat_stream` 是异步的（等网络时不能让整个进程趴下），所以它用的是这篇的升级版：`async def` + `yield` = **异步生成器**，配 `async for` 使用。
+
+```python
+import asyncio, inspect
+
+async def async_stream():
+    """第 11 篇 chat_stream 的心脏：async generator"""
+    for word in ["大", "模", "型"]:
+        await asyncio.sleep(0.01)      # 假装等网络
+        yield word
+
+async def main():
+    print("是异步生成器:", inspect.isasyncgen(async_stream()))
+    async for chunk in async_stream():
+        print(chunk, end="")
+    print()
+
+asyncio.run(main())
+```
+
+作者机器实测输出：
+
+```text
+是异步生成器: True
+大模型
+```
+
+对照着记：**同步生成器喂同步循环，异步生成器喂 `async for`**。到第 11 篇写真 LLM 流式调用时，把 `async_stream` 的 `for word in [...]` 换成 `for chunk in response:`，其他一个字符都不用改。
+
 ## 费曼复述卡
 
 1. 向同事解释：为什么 `gen_version()` 这行代码什么都没打印？（不许说"因为它是生成器"）
