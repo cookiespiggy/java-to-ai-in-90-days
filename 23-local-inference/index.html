@@ -1,0 +1,2369 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="写给 Java 后端工程师的 AI 转型路线：你不是从零开始，你只是换了一把剑。25 篇正文，全部实验实测跑通。">
+      
+      
+        <meta name="author" content="cookiespiggy">
+      
+      
+      
+        <link rel="prev" href="../22-engineering/">
+      
+      
+        <link rel="next" href="../24-serving/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>23 本地推理闭环 - Java 转 AI 的 90 天</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#23-omlxunsloth-mlx" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href=".." title="Java 转 AI 的 90 天" class="md-header__button md-logo" aria-label="Java 转 AI 的 90 天" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Java 转 AI 的 90 天
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              23 本地推理闭环
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换到暗色"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="切换到暗色" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="切换到亮色"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="切换到亮色" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/cookiespiggy/java-to-ai-in-90-days" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Java 转 AI 的 90 天" class="md-nav__button md-logo" aria-label="Java 转 AI 的 90 天" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Java 转 AI 的 90 天
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/cookiespiggy/java-to-ai-in-90-days" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../toc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    完整目录
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../00-%E5%BA%8F%E7%AB%A0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    序章
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    01 · 换语言
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    01 · 换语言
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-python-first-touch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    01 第一次亲密接触
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-types-and-typing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    02 类型这回事
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-containers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    03 容器思维
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04-functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    04 函数一等公民
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../05-generators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    05 生成器
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-object-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    06 对象模型
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07-concurrency/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    07 并发真相
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    02 · 懂原理
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    02 · 懂原理
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../08-llm-basics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    08 大模型是自动补全
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../09-token-embedding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    09 Token 与 Embedding
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../10-transformer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    10 Transformer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    03 · 上手
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    03 · 上手
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../11-first-call/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    11 第一次调用
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../12-rag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    12 RAG 原理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../13-rag-project/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    13 RAG 实战
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../14-agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    14 Agent
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../15-langgraph/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    15 LangGraph
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    04 · 精通检索与后训练
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    04 · 精通检索与后训练
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../16-advanced-retrieval/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    16 生产级检索
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../17-posttraining-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    17 后训练地图
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../18-sft-deep/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    18 SFT 深水区
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../19-alignment-rl/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    19 偏好对齐与 RLVR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../20-agent-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    20 生产级 Agent 架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    05 · 成专家
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    05 · 成专家
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../21-evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    21 评测
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../22-engineering/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    22 工程化与安全
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    23 本地推理闭环
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    23 本地推理闭环
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        先讲给朋友听（如果你只有一分钟）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aha-moment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        你的 Aha Moment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        不讲术语的版本：三个组件，一人一步
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#java" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Java 老司机对照室
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        动手实验室
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="动手实验室">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        实验 1：体检——你的机器有几件武器
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        实验 2：起服务（三步，全程不写代码）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        实验 3：业务代码零改动（第 11 篇的封神时刻）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        实验 4：把本地模型喂给编程 Agent（本篇最酷的一步）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        实验 5：微调 → 部署的完整闭环
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        回头看：13 篇的 RAG 现在可以不花钱了
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="回头看：13 篇的 RAG 现在可以不花钱了">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        两篇之间的真实关系
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        一个真实的选型决策表
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        费曼复述卡
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        今日一句话
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../24-serving/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    24 部署与推理优化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    尾声
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    尾声
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../25-career/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    25 简历与面试
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix-cheatsheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录 A 对照速查表
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix-evidence-grading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    附录 B 可信度分级手册
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        先讲给朋友听（如果你只有一分钟）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aha-moment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        你的 Aha Moment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        不讲术语的版本：三个组件，一人一步
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#java" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Java 老司机对照室
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        动手实验室
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="动手实验室">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        实验 1：体检——你的机器有几件武器
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        实验 2：起服务（三步，全程不写代码）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        实验 3：业务代码零改动（第 11 篇的封神时刻）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        实验 4：把本地模型喂给编程 Agent（本篇最酷的一步）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        实验 5：微调 → 部署的完整闭环
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        回头看：13 篇的 RAG 现在可以不花钱了
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="回头看：13 篇的 RAG 现在可以不花钱了">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        两篇之间的真实关系
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        一个真实的选型决策表
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        费曼复述卡
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        今日一句话
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/cookiespiggy/java-to-ai-in-90-days/edit/main/docs/23-local-inference.md" title="编辑此页" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="23-omlxunsloth-mlx">23 · 本地推理闭环：oMLX、unsloth 与 MLX 的三人舞<a class="headerlink" href="#23-omlxunsloth-mlx" title="Permanent link">&para;</a></h1>
+<h2 id="_1">先讲给朋友听（如果你只有一分钟）<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>你有三件武器：<strong>MLX</strong>（苹果官方的推理/训练框架）、<strong>oMLX</strong>（套在 MLX 上的生产级服务器，带连续批处理和分层 KV 缓存）、<strong>unsloth</strong>（把训练速度拉两倍、显存砍七成的加速库）。三者拼起来，就是一台 24G MacBook 上的完整 AI 工作站——<strong>而且全部兼容 OpenAI 协议，你的业务代码零改动。</strong></p>
+</blockquote>
+<h2 id="aha-moment">你的 Aha Moment<a class="headerlink" href="#aha-moment" title="Permanent link">&para;</a></h2>
+<p>先看作者机器上的真实配置（M5 Pro / 24G）：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>$<span class="w"> </span>ls<span class="w"> </span>~/.omlx/models/
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>Qwen2.5-Coder-14B-Instruct-MLX-4bit
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>Qwen3-Coder-30B-A3B-Instruct-MLX-4bit
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>Qwen3.5-9B-MLX-4bit
+</code></pre></div>
+<p><strong>一台笔记本，本地躺着三个能写代码的模型。</strong> 而 <code>omlx</code> 这个命令的真实能力（<code>--help</code> 实测，版本 0.7.0rc1）：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>usage: cli.py [-h] {start,stop,restart,serve,launch,diagnose,cluster} ...
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>omlx: Production-ready LLM server for Apple Silicon
+</code></pre></div>
+<p>再看它的两个杀手级参数：</p>
+<ul>
+<li><code>--model-dir</code>（默认 <code>~/.omlx/models</code>）——<strong>多模型同时驻留 + LRU 淘汰</strong>，内存不够时自动卸最久没用的</li>
+<li><code>--hot-cache-max-size</code> / <code>--paged-ssd-cache-dir</code>——<strong>KV 缓存分两层：内存热层 + SSD 冷层</strong>，而且<strong>跨请求持久化</strong>。这意味着第二问相似问题时，上下文不用重算</li>
+</ul>
+<p>以及最让 Java 工程师会心一笑的那个：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>omlx<span class="w"> </span>launch<span class="w"> </span>opencode<span class="w"> </span>--model<span class="w"> </span>qwen3.5
+</code></pre></div>
+<p><strong>它能把你的本地模型喂给 Claude Code / Codex / OpenCode / OpenClaw 这些编程智能体</strong>（<code>--tools-profile minimal|coding|messaging|full</code>，还能给 opus/sonnet/haiku 三档配不同模型）。翻译一下：<strong>你本地的 30B-A3B 可以当你的"廉价代打"，写 boilerplate 用它，架构难的再调 API。</strong></p>
+<p>Aha 合龙：<strong>本地推理从来不是"穷人的替代品"，它是一条独立的部署路线</strong>——数据不出内网、没有按 token 的计费单、延迟可控。而 OpenAI 兼容协议（11 篇学的）让这一切对你的代码完全透明。</p>
+<h2 id="_2">不讲术语的版本：三个组件，一人一步<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p><strong>分工，一句话讲清：</strong></p>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>角色</th>
+<th>你什么时候用它</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>MLX / mlx-lm</strong></td>
+<td>苹果官方的框架（跑模型 + 微调）</td>
+<td>底层，一般不直接碰</td>
+</tr>
+<tr>
+<td><strong>oMLX</strong></td>
+<td>包在 MLX 外的生产服务器</td>
+<td>要对外提供 API 时用它</td>
+</tr>
+<tr>
+<td><strong>unsloth</strong></td>
+<td>训练加速库（2x 快、70% 省显存）</td>
+<td>要微调模型时用它</td>
+</tr>
+</tbody>
+</table>
+<p><strong>一次完整的"本地闭环"长这样：</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>① unsloth/mlx-lm 微调出一个 adapter（18 篇）
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>        ↓
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>② 合并 + 量化成 MLX 4bit，放进 ~/.omlx/models/qwen-mibao/
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>        ↓
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>③ omlx serve 起服务（OpenAI 兼容，多模型驻留）
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>        ↓
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>④ 你的业务代码：base_url 指向 http://127.0.0.1:8000/v1（11 篇零改动）
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>        ↓
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>⑤ 进阶：omlx launch 把本地模型喂给你的编程 Agent
+</code></pre></div>
+<p><strong>四个你一定会遇到的坑，先垫在这里：</strong></p>
+<ol>
+<li><strong>oMLX 不吃 GGUF。</strong> 它的 <code>--model-dir</code> 要求子目录里有 <code>config.json</code> + <code>*.safetensors</code>（MLX 格式）。你手里那个 <code>Qwen3.5-4B-UD-Q4_K_XL.gguf</code> 得先转成 MLX 格式。<strong>GGUF 是 llama.cpp 的世界，MLX 是苹果的世界，两个宇宙。</strong></li>
+</ol>
+<blockquote>
+<p>为什么 GGUF 到处都不受欢迎？<strong>因为它是后训练流程的终点，不是起点</strong>——<code>safetensors → 训练 → fuse → 量化 → GGUF</code>，GGUF 只能挂在最后一环。18 篇有 unsloth 源码级的完整解释。</p>
+</blockquote>
+<ol>
+<li>
+<p><strong>训练和推理是两个模型文件。</strong> 微调出来的 adapter 可以"挂载"使用，但生产上更稳的做法是 merge 进基座再量化。<strong>发布物和训练物分开</strong>，跟你 Java 的"源码仓库 vs 制品仓库"一个道理。</p>
+</li>
+<li>
+<p><strong>多模型 LRU 的内存保护。</strong> <code>--memory-guard {off,safe,balanced,aggressive}</code> 四档，24G 机器建议 <code>safe</code> 起步——它会在触顶前主动卸载模型，而不是让系统开始 swap（swap 到 SSD 上，推理速度慢一个数量级）。</p>
+</li>
+<li>
+<p><strong>tokenizer 的坑。</strong> MLX 4bit 模型是重新量化的，和原版 tokenizer 若有细微差别，会出现"同一个 prompt 两种编码"。选模型时认准 <code>mlx-community</code> 或官方发布的版本，别自己转。</p>
+</li>
+</ol>
+<h2 id="java">Java 老司机对照室<a class="headerlink" href="#java" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>oMLX/MLX 概念</th>
+<th>你已经懂的概念</th>
+<th>一句话翻译</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>~/.omlx/models/&lt;name&gt;/</code></td>
+<td>Tomcat 的 webapps 目录</td>
+<td>一人一个子目录=一个应用</td>
+</tr>
+<tr>
+<td>多模型驻留 + LRU</td>
+<td>连接池 / 对象池</td>
+<td>常驻内存的按需淘汰</td>
+</tr>
+<tr>
+<td>内存热层 + SSD 冷层</td>
+<td>堆内缓存 + 堆外/磁盘缓存</td>
+<td>两级缓存，跨请求生效</td>
+</tr>
+<tr>
+<td>KV Cache 持久化</td>
+<td>预计算结果缓存</td>
+<td>上下文越长收益越大</td>
+</tr>
+<tr>
+<td>OpenAI 兼容 API</td>
+<td>REST 接口标准化</td>
+<td>换后端不改业务代码</td>
+</tr>
+<tr>
+<td><code>omlx launch opencode</code></td>
+<td>把内部 SDK 注入外部工具</td>
+<td>本地模型冒充 OpenAI</td>
+</tr>
+<tr>
+<td><code>--tools-profile</code></td>
+<td>按环境开关功能集</td>
+<td>最小权限给最小场景</td>
+</tr>
+<tr>
+<td><code>--api-key</code> / 127.0.0.1</td>
+<td>仅监听本地 + 鉴权</td>
+<td>默认只给自己用，别裸奔</td>
+</tr>
+<tr>
+<td><code>--memory-guard</code></td>
+<td>JVM 的 -Xmx + GC 策略</td>
+<td>触顶前主动让，别等 OOM</td>
+</tr>
+<tr>
+<td><code>omlx diagnose</code></td>
+<td>健康检查端点</td>
+<td>出问题先跑它</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_3">动手实验室<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>以下命令全部对着作者的 M5 Pro / 24G 实测过（oMLX 0.7.0rc1），你可以逐条对照。</p>
+<h3 id="1">实验 1：体检——你的机器有几件武器<a class="headerlink" href="#1" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>which<span class="w"> </span>omlx<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>omlx<span class="w"> </span>--version<span class="w">          </span><span class="c1"># 0.7.0rc1</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>ls<span class="w"> </span>~/.omlx/models<span class="w">                     </span><span class="c1"># 已装模型（一人一个目录）</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>ls<span class="w"> </span>~/.cache/huggingface/hub/<span class="w">          </span><span class="c1"># HF 缓存（训练基座的来源）</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="c1"># 每件武器占多少内存</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>du<span class="w"> </span>-shL<span class="w"> </span>~/.omlx/models/*
+</code></pre></div>
+<p><strong>作者机器上的真实清单</strong>（M5 Pro / 24GB）：</p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>格式</th>
+<th>大小</th>
+<th>能训？</th>
+<th>能推理？</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Qwen2.5-0.5B</code></td>
+<td>safetensors (bf16)</td>
+<td>942M</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>Qwen3.5-0.8B-Base</code></td>
+<td>safetensors</td>
+<td>3.3G</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>Qwen3.5-4B-GGUF</code></td>
+<td>GGUF (Q4_K_XL)</td>
+<td>6.7G</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>Qwen3.5-9B-MLX-4bit</code></td>
+<td>MLX 4bit</td>
+<td>~5.5G</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>Qwen2.5-Coder-14B-MLX-4bit</code></td>
+<td>MLX 4bit</td>
+<td>~8G</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>Qwen3-Coder-30B-A3B-MLX-4bit</code></td>
+<td>MLX 4bit（MoE 混合专家架构）</td>
+<td>~18G</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<h3 id="2">实验 2：起服务（三步，全程不写代码）<a class="headerlink" href="#2" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># 1. 起 OpenAI 兼容服务（默认只监听 127.0.0.1:8000）</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>omlx<span class="w"> </span>serve<span class="w"> </span>--model-dir<span class="w"> </span>~/.omlx/models<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">           </span>--memory-guard<span class="w"> </span>safe<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">           </span>--hot-cache-max-size<span class="w"> </span>4G
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="c1"># 2. 换个终端，用 curl 验证（格式和第 11 篇一模一样）</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="c1"># 注意：oMLX 默认开启 API key 鉴权（连本地都不例外），key 在 ~/.omlx/settings.json 里</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="nv">OMLX_KEY</span><span class="o">=</span><span class="k">$(</span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import json; print(json.load(open('</span><span class="nv">$HOME</span><span class="s2">/.omlx/settings.json'))['auth']['api_key'])"</span><span class="k">)</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>curl<span class="w"> </span>http://127.0.0.1:8000/v1/models<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">  </span>-H<span class="w"> </span><span class="s2">"Authorization: Bearer </span><span class="nv">$OMLX_KEY</span><span class="s2">"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>python3<span class="w"> </span>-m<span class="w"> </span>json.tool
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>curl<span class="w"> </span>http://127.0.0.1:8000/v1/chat/completions<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="w">  </span>-H<span class="w"> </span><span class="s2">"Authorization: Bearer </span><span class="nv">$OMLX_KEY</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="s1">    "model": "Qwen2.5-0.5B",</span>
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="s1">    "messages": [{"role": "user", "content": "用一句话解释什么是 KV Cache"}],</span>
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="s1">    "stream": false</span>
+<a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span class="s1">  }'</span>
+</code></pre></div>
+<p><strong>注意 <code>"model"</code> 填的是目录名</strong>（<code>Qwen2.5-0.5B</code>），不是 HF 上的 repo id。这是 oMLX 的规矩：<strong>目录名即模型 ID。</strong></p>
+<p><strong>实测数据</strong>（M5 Pro / 24GB，Qwen2.5-0.5B，2026-10-12）：</p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>实测值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>模型加载后实际内存</td>
+<td><strong>1.12 GB</strong>（日志 <code>actual: 1.12GB</code>）</td>
+</tr>
+<tr>
+<td>非流式吞吐</td>
+<td><strong>31.4 tok/s</strong>（60 token / 1.91s）</td>
+</tr>
+<tr>
+<td>流式吞吐</td>
+<td><strong>193.8 tok/s</strong>（17 token / 0.13s，含 KV 缓存命中）</td>
+</tr>
+<tr>
+<td>模型结构</td>
+<td>24 层 / 2 KV heads / 14 Q heads / 64 head_dim</td>
+</tr>
+<tr>
+<td>首 token 延迟（TTFT）</td>
+<td><strong>0.04s</strong></td>
+</tr>
+<tr>
+<td>内存天花板（safe 档）</td>
+<td><strong>7.2 GB</strong>（<code>Process memory enforcer</code> 自动执行）</td>
+</tr>
+<tr>
+<td>模型结构</td>
+<td>24 层 / 2 KV heads / 14 Q heads / 64 head_dim</td>
+</tr>
+</tbody>
+</table>
+<p><strong>一个真实发现</strong>：0.5B 模型输出末尾出现了乱码（泰文碎片）。这不是 API 问题，是<strong>小模型的能力天花板</strong>——正是 17-19 篇后训练要解决的事。</p>
+<h3 id="3-11">实验 3：业务代码零改动（第 11 篇的封神时刻）<a class="headerlink" href="#3-11" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"DEEPSEEK_API_KEY"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"EMPTY"</span>      <span class="c1"># 本地服务不校验</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># 只改这两个环境变量/字段，11 篇的全部代码原样工作</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="n">BASE_URL</span> <span class="o">=</span> <span class="s2">"http://127.0.0.1:8000/v1"</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="n">MODEL</span>    <span class="o">=</span> <span class="s2">"Qwen2.5-0.5B"</span>          <span class="c1"># 你机器上能跑的最小可对话模型</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="n">API_KEY</span>  <span class="o">=</span> <span class="s2">"EMPTY"</span>                 <span class="c1"># 本地服务不校验；填你 ~/.omlx/settings.json 里的真实值亦可</span>
+</code></pre></div>
+<p><strong>选型原则：先看你能给多少内存，再选模型。</strong> 作者机器 24GB 统一内存，日常还有别的任务在跑（实测可用仅 6.2GB），所以 9B（~5.5G）虽然能加载但会触发 swap，0.5B（~1.1G）才是日常能用的选择。<strong>这不是"9B 不好"，是"你的机器现在跑不动 9B"。</strong></p>
+<p><strong>流式输出、<code>asyncio.gather</code> 并发三问、<code>@retry</code> 退避重试，全部原样能跑。</strong> 这就是 OpenAI 兼容协议的红利——上游从 DeepSeek 换成你家那台 MacBook，对业务代码是一次环境变量切换。</p>
+<h3 id="4-agent">实验 4：把本地模型喂给编程 Agent（本篇最酷的一步）<a class="headerlink" href="#4-agent" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># 让 OpenCode 用你本地的 Qwen2.5-0.5B 当它的大脑</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>omlx<span class="w"> </span>launch<span class="w"> </span>opencode<span class="w"> </span>--model<span class="w"> </span>Qwen2.5-0.5B<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">                     </span>--tools-profile<span class="w"> </span>coding
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="c1"># 或者更激进的：三档分工，便宜活给本地，难活给 API</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>omlx<span class="w"> </span>launch<span class="w"> </span>codex<span class="w"> </span>--model<span class="w"> </span>Qwen2.5-0.5B<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">                  </span>--haiku<span class="w"> </span>Qwen2.5-0.5B<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">                  </span>--sonnet<span class="w"> </span>deepseek-chat<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">                  </span>--opus<span class="w"> </span>deepseek-chat
+</code></pre></div>
+<p>第二条命令值得多看两眼：<strong>haiku 档（琐碎活）走本地免费模型，sonnet/opus 档（难活）走 API。</strong> 这是 2026 年本地推理最现实的生态位——不是取代 API，是<strong>把 API 的账单拦掉 80% 的琐碎请求</strong>。</p>
+<h3 id="5">实验 5：微调 → 部署的完整闭环<a class="headerlink" href="#5" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># ① 微调（18 篇的产物）</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>mlx_lm.lora<span class="w"> </span>--model<span class="w"> </span>&lt;基座&gt;<span class="w"> </span>--train<span class="w"> </span>--data<span class="w"> </span>./data<span class="w"> </span>--iters<span class="w"> </span><span class="m">600</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># ② 把 adapter 合并回基座并量化成 4bit（发布物与训练物分离）</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>mlx_lm.fuse<span class="w"> </span>--model<span class="w"> </span>&lt;基座&gt;<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">                                </span>--adapter-path<span class="w"> </span>./adapters/mibao-style<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">                                </span>--save-path<span class="w"> </span>~/.omlx/models/qwen-mibao
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="c1"># 注意：fuse 后的目录结构必须满足 oMLX 要求（config.json + *.safetensors）</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="c1"># ③ 重启服务，新模型立即可用</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>omlx<span class="w"> </span>restart
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>curl<span class="w"> </span>http://127.0.0.1:8000/v1/models<span class="w"> </span><span class="p">|</span><span class="w"> </span>python3<span class="w"> </span>-m<span class="w"> </span>json.tool<span class="w">    </span><span class="c1"># 确认 qwen-mibao 在列表里</span>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="c1"># ④ 跑一遍 16 篇评测集，对比微调前后（这才是发布闸门）</span>
+</code></pre></div>
+<p><strong>四步走完，你拥有了一个业务专属的本地模型，且和云 API 一样好用。</strong> 第 ⑤ 步别省——没有评测集背书的部署，跟闭眼上线没区别。</p>
+<h2 id="13-rag">回头看：13 篇的 RAG 现在可以不花钱了<a class="headerlink" href="#13-rag" title="Permanent link">&para;</a></h2>
+<p>本篇把本地推理讲完了，但有个疑问很容易被忽略：<strong>"我本地跑起模型了，那事前那个 RAG 项目也要重新花钱么？"</strong></p>
+<p>不用。回去看 13 篇实验 3.5：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nv">LLM_BACKEND</span><span class="o">=</span><span class="nb">local</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="nv">LOCAL_BASE_URL</span><span class="o">=</span>http://127.0.0.1:53967/v1
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="nv">LOCAL_MODEL</span><span class="o">=</span>unsloth/Qwen3.5-4B-GGUF
+</code></pre></div>
+<p>三行配置，13 篇的问答就跑在你本地模型上了。作者实测：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>Q: 我入职三年了，年假几天？
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>A: 根据资料，入职满一年享有 5 天带薪年假...   [672ms]
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>Q: 公司食堂周三有小龙虾吗？
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>A: 资料未提及                                    （正确拒答）   [229ms]
+</code></pre></div>
+<p><strong>推理 0.2~0.8 秒，零 API 费用。</strong></p>
+<h3 id="_4">两篇之间的真实关系<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<p>这里有一条很值得单独说的线索，因为很多人学业的时候会把它当成两个独立主题：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>本地推理（23 篇）   →  怎么把模型跑起来？
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>                            ↓
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>                  都是 OpenAI 兼容协议
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>                            ↓
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>业务管道（13 篇 RAG）   →  怎么把模型接进业务？
+</code></pre></div>
+<p><strong>中间那个共识（OpenAI 兼容协议）才是真正的类型。</strong> 它让“怎么跑”和“怎么用”可以分开学习，
+也让你在两个场景之间切换的代价小到只是改一行配置。</p>
+<blockquote>
+<p>反过来看：如果本地推理选的是自己写的专有协议（不是 OpenAI 兼容的），
+那 13 篇就得重写一遍生成层。<strong>选技术方案时要看的不是"它优不优"，而是"我升级环境时能不能整个系统换掉"。</strong></p>
+</blockquote>
+<h3 id="_5">一个真实的选型决策表<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<p>新手常问的“本地那么好，云端那么好，我该选哪个？”——不要回答“看情况”，照着这张表选：</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>选择</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>学习 / 试验</td>
+<td><strong>本地</strong></td>
+<td>零成本，错了随手重启，不拥拥你的 API 钱</td>
+</tr>
+<tr>
+<td>HR / 金融等内部查询</td>
+<td><strong>本地</strong></td>
+<td>员工信息不出内网，审合规这条很重要</td>
+</tr>
+<tr>
+<td>客服 / 多轮对话</td>
+<td><strong>云端</strong></td>
+<td>4B 的长程记忆和复杂推理明显不够，而且会话里容易混权</td>
+</tr>
+<tr>
+<td>上线前负载高</td>
+<td><strong>云端</strong></td>
+<td>并发冲刺时本地单机很容易打满</td>
+</tr>
+</tbody>
+</table>
+<p><strong>结论：默认本地，按场景切云端。</strong> 这也是 13 篇 <code>llm_backend.py</code> 默认设 <code>local</code> 的原因——
+<strong>它不只是个配置默认值，它是一个已经被实测验证过的工程决策。</strong></p>
+<h2 id="_6">费曼复述卡<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<ol>
+<li>向同事解释：为什么说"本地推理不是穷人的替代品，而是一条独立部署路线"？从数据、成本、延迟三个角度说。</li>
+<li>oMLX 为什么不吃 GGUF？它要的目录结构长什么样？</li>
+<li><code>omlx launch codex --haiku &lt;本地模型&gt; --opus &lt;API&gt;</code> 这个分工解决了什么商业问题？</li>
+</ol>
+<p>三题过不了，把实验 2 的 curl 换成 11 篇的 Python 客户端真跑一遍。</p>
+<h2 id="_7">今日一句话<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>MLX 是引擎，oMLX 是整车，unsloth 是改装厂——三者在你的 24G MacBook 上拼出一台完整工作站，而且全部对 OpenAI 协议敞开。</p>
+</blockquote>
+<hr />
+<p>下一篇：<a href="../24-serving/">24 · 部署：vLLM 与推理优化</a>（返回 <a href="../">目录</a>）</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+        
+          
+          <a href="../22-engineering/" class="md-footer__link md-footer__link--prev" aria-label="上一页: 22 工程化与安全">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                上一页
+              </span>
+              <div class="md-ellipsis">
+                22 工程化与安全
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../24-serving/" class="md-footer__link md-footer__link--next" aria-label="下一页: 24 部署与推理优化">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                下一页
+              </span>
+              <div class="md-ellipsis">
+                24 部署与推理优化
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.top", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
