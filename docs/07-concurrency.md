@@ -8,7 +8,7 @@
 
 先给你看一段舒服的代码，第 14 篇 Agent 篇会返场：
 
-```python
+```text
 import asyncio
 
 async def ask_llm(question: str) -> str:
