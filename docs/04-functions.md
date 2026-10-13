@@ -142,6 +142,42 @@ print(c(), c(), c())   # 1 2 3
 
 Java 里这段要 `final int[] holder = {0}` 套娃，因为匿名内部类捕获的变量必须 final。Python 一个 `nonlocal` 直接声明修改权。**闭包 = 函数 + 它的出生证明（环境变量）**，这是函数式编程的第一课，也是你后面读装饰器源码的敲门砖。
 
+### 实验 3.5：functools.partial——闭包失散多年的亲兄弟
+
+有些参数你每次都要写，烦不烦？`partial` 帮你先焊死：
+
+```python
+import functools
+
+def call_llm(prompt, model, temperature=0.2):
+    return f"[{model} t={temperature}] {prompt}"
+
+default_llm = functools.partial(call_llm, model="qwen3:4b", temperature=0.2)
+print(default_llm("年假几天"))
+print(default_llm("能改成 0.7 吗", temperature=0.7))     # 焊死的照样能覆盖
+
+print("内幕:", default_llm.func.__name__, default_llm.args, default_llm.keywords)
+
+embed = functools.partial(call_llm, model="text-embedding-v3")
+print(list(map(embed, ["年假", "病假"])))
+```
+
+作者机器实测输出：
+
+```text
+[qwen3:4b t=0.2] 年假几天
+[qwen3:4b t=0.7] 能改成 0.7 吗
+内幕: call_llm () {'model': 'qwen3:4b', 'temperature': 0.2}
+['[text-embedding-v3 t=0.2] 年假', '[text-embedding-v3 t=0.2] 病假']
+```
+
+两个要点：
+
+- **`partial` 不是黑魔法，就是个对象**，三个属性摆在那：`func` 是真身、`args` 是按位置焊的前缀、`keywords` 是焊死的关键字。调用时你还能临时覆盖焊死的值——焊的是默认值，不是铁律。
+- **`partial` + `map` 是批量处理的黄金搭档**：最后三行就是 `map(partial(embed, ...), texts)` 的骨架，第 13 篇把 15 条文档灌进 pgvector 时你会写出工业级版本（批量 + 重试）。
+
+Java 老司机对照室：Java 想干这事得写个工厂方法或者 lambda 硬编码参数，`Function<String,String> f = p -> call(p, "qwen", 0.2)`；`partial` 把这个"固定前几个参数"的动作变成了语言级的一等公民。读完这一节，你工具箱里就没有"每次重抄相同参数"的手酸病了。
+
 ### 实验 4：带参数的装饰器——LLM 重试的亲爹
 
 ```python
