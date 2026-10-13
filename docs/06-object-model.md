@@ -144,7 +144,52 @@ print(f"本次调用耗时 {t.elapsed:.2f}s")   # 约 0.10s
 
 `__enter__` 进门、`__exit__` 出门（异常也走这个门），`return False` 意味着"有事说事，异常别拦"。**第 22 篇的 `token_meter` 就是把 Timer 升级成“计时 + 计费”二合一的完全体**——同一个 `with` 结构，加几行就是工程化的起点。
 
-顺带认个亲：Python 标准库 `contextlib` 里有现成的 `@contextmanager`，用 `yield` 一行写上下文管理器（05 篇的 yield 在此返场）。感兴趣自己搜，本篇点到为止。
+顺带认个亲：Python 标准库 `contextlib` 里有现成的 `@contextmanager`，**用 `yield` 一行写出上下文管理器**——05 篇那个"暂停键"，在这里从语法糖变成了工程基建：
+
+```python
+import time
+from contextlib import contextmanager
+
+@contextmanager
+def timer(label):
+    """用 yield 写上下文管理器 = 05 篇生成器的社会实践"""
+    start = time.perf_counter()
+    try:
+        yield                      # 暂停键：执行权在这里交回 with 块
+    finally:
+        print(f"{label} 耗时 {time.perf_counter() - start:.3f}s")
+
+with timer("假装调 LLM"):
+    time.sleep(0.05)
+
+# yield 出来的东西，就是 as 后面的变量：第 22 篇 token_meter 的骨架
+@contextmanager
+def token_meter():
+    budget = {"tokens": 0}
+    class Meter:
+        def add(self, n):
+            budget["tokens"] += n
+    yield Meter()                 # with ... as m 的 m，就是这个对象
+    print(f"本次消耗 {budget['tokens']} tokens")
+
+with token_meter() as m:
+    m.add(120)
+    m.add(80)
+```
+
+作者机器实测输出：
+
+```text
+假装调 LLM 耗时 0.055s
+本次消耗 200 tokens
+```
+
+两句话看懂它：
+
+- **`yield` 之前是进门、之后是出门**，异常也走 `finally` 这条路——所以 `@contextmanager` 版本天然比手写 `__exit__` 少一个"别忘了 `return False`"的坑。
+- **`yield` 出来的对象就是 `as m`**。上面这个 `token_meter` 已经是第 22 篇计费组件的完整心脏了：`with` 进来开账本，`m.add()` 记流量，出门自动结账。你要做的只是把 `time.sleep` 换成真 LLM 调用。
+
+至此 05 和 06 篇正式合流：**`yield` 既是懒数据的传送带（05），也是资源管理的开关（06）。** 同一个语法，两副面孔。
 
 ### 实验 4：dataclass——Java record 的孪生兄弟（但性格相反）
 
@@ -314,6 +359,7 @@ except AttributeError as e:
 1. 用"便利贴 vs 遥控器"的比喻，向同事解释：为什么 `b = a` 后改 b，a 也跟着变？而 `y = 2` 改 y，x 不变？
 2. 说出浅拷贝和深拷贝的区别，并举一个 RAG 实战里非用深拷贝不可的场景。
 3. `with Timer() as t:` 这段代码，等价于 Java 的什么语法？`__exit__` 的返回值控制什么行为？
+4. 用"暂停键"解释：`@contextmanager` 里 `yield` 之前和之后的代码，分别在什么时刻执行？
 
 三题过不了，回到"不讲术语的版本"第一层。便利贴宇宙是 Python 的"世界观"，方法论比语法重要——**世界观不换，写三年也是 Java 翻译腔。**
 
