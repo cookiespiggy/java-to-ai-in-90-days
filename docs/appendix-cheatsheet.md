@@ -49,6 +49,11 @@
 | `record Point(int x, int y)` | `@dataclass class Point:`（默认可变） |
 | `Record` 不可变 | `tuple` / `NamedTuple` / `frozen dataclass` |
 | `try (var r = open())` | `with open(...) as f:` |
+| `Consumer<T>` 带状态实现 | `class X:` + `__call__(self, ...)`（可调用对象，第 06 篇） |
+| `Iterable<T>` / `Iterator<T>` | `__iter__` + `__next__`（`for` 只认这协议，第 05 篇） |
+| Guava / 静态工具类 | `functools.partial`（焊死前几个参数，第 04 篇） |
+| 工厂方法固定参数 | `partial(fn, model=..., temperature=...)` |
+| `void method(){}` + `__slots__` 无对应 | `__slots__`（海量小对象省内存，十万个省 61%，第 06 篇） |
 
 ## 四、类型系统
 
@@ -142,6 +147,8 @@ mlx_lm.fuse --model <基座> --adapter-path ./adapters/x --save-path ./models/fu
 ## 八、一份诚实的能力自检（转正前过一遍）
 
 - [ ] 不看书写出生成器 + 装饰器的骨架
+- [ ] 说得出 `for x in obj` 的两个协议方法，和 `StopIteration` 在哪一步发生
+- [ ] 给一个海量小对象类加过 `__slots__`，并说出它的代价
 - [ ] 跑通过带重试和流式的 LLM Client
 - [ ] pgvector 里建过库、灌过 chunk、写过检索 SQL
 - [ ] 有一张 50+ 条的评测集和通过率数字
