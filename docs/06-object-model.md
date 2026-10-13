@@ -168,6 +168,147 @@ d1.tags.append("HR")           # 独立 mutable，不串味
 
 Java record 是不可变的（想改只能 new）；dataclass 默认可变，更像个轻量 POJO。**`field(default_factory=list)` 是 `None` 哨兵的正式编制版。** 第 21 篇评测集会用 `@dataclass` 批量定义评测用例（输入 + 期望 + 类别），第 13 篇的文档块、检索结果也常用这个造型承载，提前认脸。
 
+### 实验 5：__slots__——几十万文档块的内存瘦身术
+
+还记得实验 4 那个 `Document` 吗？第 13 篇切完公司文档，你手里会有**几万个甚至几十万个**这种对象。普通实例每个都拖着一个小字典（`__dict__`）装属性，内存哗哗地流；`__slots__` 把字典换成定长槽位，内存直接瘦一圈：
+
+```python
+import sys
+
+class Chunk:
+    def __init__(self, content, source, score):
+        self.content = content; self.source = source; self.score = score
+
+class ChunkSlots:
+    __slots__ = ("content", "source", "score")
+    def __init__(self, content, source, score):
+        self.content = content; self.source = source; self.score = score
+
+n = 100_000
+a = [Chunk("年假满一年5天", "员工手册-年假", 0.71) for _ in range(n)]
+b = [ChunkSlots("年假满一年5天", "员工手册-年假", 0.71) for _ in range(n)]
+sa = sum(sys.getsizeof(o) + sys.getsizeof(o.__dict__) for o in a[:1000]) / 1000
+sb = sum(sys.getsizeof(o) for o in b[:1000]) / 1000
+print(f"对象数 n = {n:,}")
+print(f"普通实例单对象内存 {sa:.0f} B，slots {sb:.0f} B，省 {100 - 100 * sb / sa:.0f}%")
+print(f"总内存对比（MB）：{sa * n / 1e6:.1f} vs {sb * n / 1e6:.1f}")
+
+try:
+    b[0].new_attr = 1
+except AttributeError as e:
+    print("slots 拦住动态加属性:", e)
+
+# dataclass 的正式编制版
+from dataclasses import dataclass
+
+@dataclass(slots=True)
+class DocSlots:
+    content: str
+    source: str = "unknown"
+    score: float = 0.0
+
+d = DocSlots(content="年假满一年5天")
+print(d, d.content)
+try:
+    d.nope = 1
+except AttributeError as e:
+    print("dataclass(slots=True) 同样拦截:", e)
+```
+
+作者机器实测输出（CPython 3.13.13，macOS arm64）：
+
+```text
+对象数 n = 100,000
+普通实例单对象内存 144 B，slots 56 B，省 61%
+总内存对比（MB）：14.4 vs 5.6
+slots 拦住动态加属性: 'ChunkSlots' object has no attribute 'new_attr' and no __dict__ for setting new attributes
+DocSlots(content='年假满一年5天', source='unknown', score=0.0) 年假满一年5天
+dataclass(slots=True) 同样拦截: 'DocSlots' object has no attribute 'nope' and no __dict__ for setting new attributes
+```
+
+十万个对象省出将近 9 MB——听起来不多，但这是**唯一一处"改一行属性声明就见效"的优化**，而且它顺便堵住了一个真实的生产事故源：动态往对象上挂临时属性（`doc.tmp = xxx`），代码一散就没人记得它从哪来的。**`@dataclass(slots=True)` 是正式编制版**，Python 3.10+ 可用，dataclass 该有的照样有。
+
+代价也要说清楚：**slots 类不能随便加新属性，继承链上加 slots 容易踩坑**。所以只对"定型了的海量小对象"用，别对三天两头改结构的配置类用。
+
+### 实验 6：__call__ 与 __getattr__——对象也能当函数，属性也能玩赖的
+
+这两个是 Python 元编程的门把手，你看框架源码时天天见，今天一次认完。
+
+**`__call__`：让对象可被调用。** 第 13 篇你要写一个检索器，它天然该长这样：
+
+```python
+class Retriever:
+    """可调用对象 = 第 13 篇 retrieve() 的身份证"""
+
+    def __init__(self, threshold=0.6):
+        self.threshold = threshold
+        self.calls = 0
+
+    def __call__(self, query):
+        self.calls += 1
+        print(f"  检索「{query}」阈值 {self.threshold}，第 {self.calls} 次调用")
+        return [("员工手册-年假", "年假入职满一年享有5天", 0.71)]
+
+retriever = Retriever()
+print("callable(retriever):", callable(retriever))
+
+hits = retriever("年假几天")            # 对象当函数用，第 13 篇您就调它
+print("命中:", hits)
+```
+
+实测输出：
+
+```text
+callable(retriever): True
+  检索「年假几天」阈值 0.6，第 1 次调用
+命中: [('员工手册-年假', '年假入职满一年享有5天', 0.71)]
+```
+
+为什么框架爱用可调用对象而不是裸函数？**因为函数只有逻辑，对象还能带配置和状态**——`threshold` 是配置，`calls` 是状态（顺手把调用次数记下来，第 21 篇做评测统计时你会感谢它）。Java 里这叫"带状态的功能接口实现"，Python 里一个 `__call__` 就完事。
+
+**`__getattr__`：按需加载的赖皮管家。** 只在属性找不到时被触发，很多重型库用它做懒加载：
+
+```python
+class LazyLib:
+    """__getattr__：真身用到才加载（属性名拼错也能抓住）"""
+
+    ALLOWED = {"array", "zeros", "ones"}
+
+    def __init__(self, name):
+        object.__setattr__(self, "_name", name)
+        object.__setattr__(self, "_loaded", None)
+
+    def _load(self):
+        print(f"  [lazy] 第一次访问才真加载 {self._name} ...")
+        return {"np": "numpy-2.x", "pd": "pandas-2.x"}[self._name]
+
+    def __getattr__(self, item):
+        if item.startswith("_") or item not in LazyLib.ALLOWED:
+            raise AttributeError(item)
+        return f"{self._load()}.{item}"
+
+np = LazyLib("np")
+print("还没碰 np，什么都没发生")
+print("现在访问 np.array ->", np.array)
+try:
+    np.nope
+except AttributeError as e:
+    print("拼错照样报 AttributeError:", e)
+```
+
+实测输出：
+
+```text
+还没碰 np，什么都没发生
+  [lazy] 第一次访问才真加载 np ...
+现在访问 np.array -> numpy-2.x.array
+拼错照样报 AttributeError: nope
+```
+
+`np` 在构造时不干正事，第一次 `.array` 才加载真身——**"用到了才付代价"**，这正是第 11 篇你敢在脚本里 import 一堆 SDK 的底气。注意 `__init__` 里用 `object.__setattr__` 而不是 `self.xxx = ...`：后者会再触发一次 `__getattr__` 绕圈子，这类细节是翻车重灾区。
+
+顺带一个零成本的工程习惯：给类写 `__repr__`。上面那个 `Timer` 对象 `print(t)` 只会得到 `<__main__.Timer object at 0x10f3a2b40>`，加上 `__repr__` 返回 `<Timer 运行了 0.055s>`，日志里一眼认出它是谁。第 22 篇排查问题时你会回来谢这个习惯。
+
 ## 费曼复述卡
 
 1. 用"便利贴 vs 遥控器"的比喻，向同事解释：为什么 `b = a` 后改 b，a 也跟着变？而 `y = 2` 改 y，x 不变？
