@@ -154,11 +154,20 @@ EOF
 chmod 600 .env                          # 只给自己读写
 ```
 
-代码里两个 SDK 读**各自的变量名**（实测就是这么配的）：
+代码里两个 SDK 读**各自的变量名**。完整版见项目里的 `llm_backend.py`（第 3.5 节会用它切本地模型），这里先认脸：
 
 ```python
-emb_client = OpenAI(api_key=os.environ["AI_DASHSCOPE_API_KEY"], ...)   # 读这个
-llm_client = OpenAI(api_key=os.environ["DEEPSEEK_API_KEY"], ...)      # 读这个
+import os
+from openai import OpenAI
+
+emb_client = OpenAI(
+    api_key=os.environ["AI_DASHSCOPE_API_KEY"],        # 读这个
+    base_url=os.environ["EMBEDDING_BASE_URL"],
+)
+llm_client = OpenAI(
+    api_key=os.environ["DEEPSEEK_API_KEY"],            # 读这个
+    base_url="https://api.deepseek.com",               # 切本地时换成 oMLX 的地址（3.5 节）
+)
 ```
 
 > 说明：embedding 端点以你实际平台为准，百炼控制台→模型广场搜 `text-embedding-v3`（1024 维）复制 base_url 和 key。**硅基流动的 `BAAI/bge-m3` 也可，照着改 `.env` 即可。**
@@ -282,6 +291,101 @@ uv run python ingest.py
 1. **先 DELETE 再 INSERT**——重跑不堆重复数据，ETL 的幂等基操
 2. **embedding 逐条调**——15 条 demo 无所谓；真项目必须批量（openai SDK 一次 input 传 list）+ 失败重试，成本直接差一个数量级
 3. **chunk 带 source 元数据**——引用溯源靠它，没有 source 的 RAG 等于匿名举报
+
+### 实验 2.5：AI 数据处理三件套——pandas / numpy / DuckDB（Java 老司机的第二现场）
+
+上面这段 ETL 里，你迟早会撞到一个问题：**"我想看看这批 chunk 到底长什么样"**——按 source 数一数、把分数分布拉出来看看阈值该定多少、某条文档为什么没被召回。
+
+Java 老司机的肌肉记忆是"导 CSV 回 Excel"或者"再连一次库写段 SQL"。Python 给的是第三条路，也是 AI 圈默认的土话：**不起服务、不建表，直接对内存里的对象和手边的 CSV 开算**。三件套各管一段，五分钟入个门：
+
+```python
+# 安装：uv add numpy pandas duckdb（裸 Python 就 pip install -U）
+import numpy as np, pandas as pd, duckdb
+from dataclasses import dataclass
+
+@dataclass(slots=True)
+class Chunk:
+    content: str
+    source: str
+    score: float
+
+chunks = [
+    Chunk("年假制度：入职满一年享有5天带薪年假，满十年10天，满十五年15天。年假最小申请单位为半天。", "员工手册-年假", 0.71),
+    Chunk("病假制度：需提供二级以上医院诊断证明，病假期间工资按基本工资的80%发放，全年累计不超过30天。", "员工手册-病假", 0.58),
+    Chunk("差旅报销需在行程结束后30天内提交，发票抬头必须为公司全称，超标部分需分管副总裁特批。", "员工手册-报销", 0.81),
+    Chunk("考勤制度：标准工时早9晚6。每月允许3次忘打卡豁免，第4次起每次扣款50元。季度全勤奖200元。", "员工手册-考勤", 0.42),
+    Chunk("年假最小申请单位为半天，半天=4小时，不足半天按半天计。", "员工手册-年假", 0.66),
+]
+
+# 1) numpy：向量就是数组，"语义相似"根本不是玄学
+#    假装 embedding：把每个 chunk 压成 4 维"伪向量"（真实是 1024 维）
+vecs = np.array([[1.0, 0.0, 0.2, 0.0], [0.0, 1.0, 0.0, 0.1], [0.3, 0.0, 1.0, 0.0], [0.0, 0.1, 0.0, 1.0], [0.9, 0.0, 0.3, 0.0]])
+query = np.array([1.0, 0.0, 0.25, 0.0])
+
+def cosine(a, b):
+    """支持 (d,) 或 (n,d) 两种输入，返回相似度或相似度向量"""
+    a, b = np.atleast_2d(a), np.atleast_2d(b)
+    num = a @ b.T
+    den = np.linalg.norm(a, axis=1, keepdims=True) * np.linalg.norm(b, axis=1, keepdims=True)
+    sims = num / den
+    return float(sims[0, 0]) if sims.shape == (1, 1) else sims[:, 0]
+
+print("numpy 算余弦相似度（query=年假）:")
+for c, v in zip(chunks, vecs):
+    print(f"  {cosine(query, v):.3f}  {c.source}  {c.content[:18]}...")
+sims = cosine(vecs, query)          # 一次算全部：矩阵 × 向量
+print("top1 是第", int(np.argmax(sims)), "条 chunk（上面决策 4 那个 `<=>` 算的就是它）")
+
+# 2) pandas：一张表看清 chunk 分布，RAG 排障的第一步
+df = pd.DataFrame({"source": [c.source for c in chunks],
+                   "score": [c.score for c in chunks],
+                   "chars": [len(c.content) for c in chunks]})
+print("\npandas 统计 chunk:")
+print(df.groupby("source")["score"].agg(["count", "max", "min"]).round(3).to_string())
+df.to_csv("chunks.csv", index=False)
+
+# 3) DuckDB：不起服务直接对 CSV 跑 SQL
+con = duckdb.connect()
+print("\nDuckDB 直接查 CSV:")
+print(con.execute("select source, count(*) as n, round(max(score),3) as top from 'chunks.csv' "
+                  "group by source order by top desc").df().to_string(index=False))
+con.close()
+```
+
+作者机器实测输出（numpy 2.5.4 / duckdb 1.5.6 / CPython 3.13.13）：
+
+```text
+numpy 算余弦相似度（query=年假）:
+  0.999  员工手册-年假  年假制度：入职满一年享有5天...
+  0.000  员工手册-病假  病假制度：需提供二级以上医院...
+  0.511  员工手册-报销  差旅报销需在行程结束后30天内...
+  0.000  员工手册-考勤  考勤制度：标准工时早9晚6。...
+  0.997  员工手册-年假  年假最小申请单位为半天...
+top1 是第 0 条 chunk（第 13 篇 SQL 里 () <=> 干的就是这件事）
+
+pandas 统计 chunk:
+         count   max   min
+source                    
+员工手册-年假      2  0.71  0.66
+员工手册-报销      1  0.81  0.81
+员工手册-病假      1  0.58  0.58
+员工手册-考勤      1  0.42  0.42
+
+DuckDB 直接查 CSV:
+ source  n  top
+员工手册-报销  1  0.81
+员工手册-年假  2  0.71
+员工手册-病假  1  0.58
+员工手册-考勤  1  0.42
+```
+
+三条要点，对应三个"以后再也不用问人"的能力：
+
+1. **numpy 让你看懂 pgvector 的存根。** 上面这个 `cosine` 就是 `<=>`（余弦距离）的全部数学。PG 里你写 `1 - (a <=> b)` 拿到的分数，和这里算的 0.999 是同一个东西——**调阈值 0.6 时心里有底了**。第 16 篇讲 Rerank 时这条会返场。
+2. **pandas 是"看数据"的显微镜。** 上面 `groupby().agg()` 三行，等价于先导 Excel 再拖透视表。RAG 排障九成时间是看数据：哪批文档没切好、分数是不是全挤在 0.5 附近、某类问题为什么召回为 0。第 21 篇做评测集会正式用它。
+3. **DuckDB 是"本机 OLAP 的偷渡船"。** 嵌入式（`pip install` 完事，不用像 PG 那样起服务）、直接吃 CSV/Parquet/JSON、SQL 语法基本就是 PG 的亲兄弟——**你那条 SQL 经验非但没废，还多了一个不用运维的战场**。日志归档、几十万行明细、RAG 评测结果回溯，都是它的甜区。
+
+**边界要划清楚，不然会走火入魔：** PG + pgvector 是唯一权威存储，写入、事务、权限都归它管；这三件套是**第二现场**，只做本机探索、特征计算、离线统计，不进生产链路。谁要拿 pandas 当数据库用，谁就会在某个深夜发现自己得手写一套事务和权限。
 
 ### 实验 3：查询管道（11 篇的 chat_stream 回来啦）
 
